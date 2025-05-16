@@ -1,0 +1,19 @@
+---
+- name: Create working directory if not present
+  ansible.builtin.file:
+    path: "{{ machine.working_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Create Vagrantfile
+  template:
+    src: Vagrantfile.j2
+    dest: "{{ machine.working_dir }}/Vagrantfile"
+    mode: '0644'
+
+- name: Copy provisioning files to VM host
+  copy:
+    src: "{{ item }}"
+    dest: "{{ machine.working_dir }}"
+    mode: '0644'
+  loop: "{{ machine.provisioning_files }}"

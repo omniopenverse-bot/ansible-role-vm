@@ -1,6 +1,6 @@
 galaxy_info:
   author: arIseneO
-  description: Automate the creation of Virtual Machines using preinstalled Vagrant and VirtualBox softwares.
+  description: An Ansible role that generates Vagrantfiles on remote hosts from a YAML definition and optionally provisions VMs.
   # company: your company (optional)
 
   # If the issue tracker for your role is not on github, uncomment the
@@ -44,6 +44,8 @@ galaxy_info:
     - virtualbox
     - vagrant
     - virtual machine
+    - vm
+    - vagrantfile
     # List tags for your role here, one per line. A tag is a keyword that describes
     # and categorizes the role. Users find roles by searching for tags. Be sure to
     # remove the '[]' above, if you add tags to this list.

@@ -1,46 +1,11 @@
 ---
-- name: "Run vagrant command '{{ clicmd }}' on host and display output"
+- name: "Run 'vagrant {{ vagrantoptions }}' on host and display output"
   block:
-  - name: "Run '{{ cmd }}' on host"
-    shell: "{{ cmd }} {{ item.NAME }}"
+  - name: "Run 'vagrant {{ vagrantoptions }}' on host"
+    shell: "vagrant {{ vagrantoptions }}"
     args:
-      chdir: "{{ working_dir }}"
-    environment:
-      NAME:         "{{ item.NAME         | default('VM42') }}"
-      HOSTNAME:     "{{ item.HOSTNAME     | default('VM42') }}"
-      CPU:          "{{ item.CPU          | default(1) }}"
-      MEMORY:       "{{ item.MEMORY       | default(1024) }}"
-      IMAGE:        "{{ item.IMAGE        | default('generic/ubuntu2004') }}"
-      TAG:          "{{ item.TAG          | default('4.3.6') }}"
-      PROVIDER:     "{{ item.PROVIDER     | default('virtualbox') }}"
-      NETWORK:      "{{ item.NETWORK      | default('private') }}"
-      IP:           "{{ item.IP           | default('None') }}"
-      MAC:          "{{ item.MAC          | default('None') }}"
-      BRIDGE:       "{{ item.BRIDGE       | default('None') }}"
-      GUEST_PORT:   "{{ item.GUEST_PORT   | default(80) }}"
-      HOST_PORT:    "{{ item.HOST_PORT    | default(8080) }}"
-      HOST_IP:      "{{ item.HOST_IP      | default('None') }}"
-      DISABLE_SYNC: "{{ item.DISABLE_SYNC | default(true) }}"
-      LOCAL_SYNC:   "{{ item.LOCAL_SYNC   | default('.') }}"
-      REMOTE_SYNC:  "{{ item.REMOTE_SYNC  | default('/vagrant') }}"
-      PLAYBOOK:     >-
-        {%- if item.RUN_PLAYBOOK is defined and item.RUN_PLAYBOOK == true -%}
-          {{ playbook_vm }}
-        {%- else -%}
-          void.yml
-        {%- endif -%}
-      SCRIPT:       >-
-        {%- if item.RUN_SCRIPT is defined and item.RUN_SCRIPT == true -%}
-          {{ script_vm }}
-        {%- else -%}
-          void.sh
-        {%- endif -%} 
-      SCRIPT_ARGS:  "{{ item.SCRIPT_ARGS  | default('') }}"
+      chdir: "{{ machine.working_dir }}"
     register: response
-    when: 
-    - nodes_selector is undefined or (nodes_selector | length == 0) or
-      nodes_selector.include is defined and nodes_selector.include in item.NAME
-    with_items: "{{ vnodes }}"
 
   - name: Display run output
     debug:

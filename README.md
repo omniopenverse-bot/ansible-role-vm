@@ -1,12 +1,14 @@
 Role Name
 =========
 
-Automate the creation on Virtual machines using Virtualbox and Vagrant.
+This role automates the creation of Vagrantfiles on one or more host machines, based on a YAML definition file provided as a variable. The YAML file should list the target host machines using keys that match the ansible_host entries in the inventory. Under each host entry, users can define one or more VMs using standard Vagrant configuration options as documented in the official Vagrant documentation.
+
+Additionally, if both Vagrant and VirtualBox are installed on the host machine(s), the role can optionally bring up the defined VMs automatically. This behavior is controlled using the vagrantoption key under each machine in the YAML file.
 
 Requirements
 ------------
 
-Vagrant and Virtualbox should be installed on the machine host (machine that will host VM(s)).
+Vagrant and VirtualBox must be installed on the host machine in order to execute the vagrant command using the `vagrantoptions` var.
 
 Role Variables
 --------------
@@ -25,80 +27,38 @@ Example Playbook
       roles:
         - aIrseneO.vm
       vars:
-        ## User of the host machine
-        #
-        host_user: ansible
-
-        ## Working directory on the host machine
-        #
-        working_dir: "/home/{{ host_user }}/vagrant"
-
-        ## Public key to allow ssh client to access VM(s)
-        #   Local ssh public key can be used "~/.ssh/id_rsa.pub"
-        #
-        # pub_key: "~/.ssh/id_rsa.pub"
-
-        ## Vagrant available clicmd:
-        #      up | resume | validate | status (default)
-        #    halt | reload | suspend  | destroy
-        #   clean | provision
-        #
-        clicmd: status
-
-        ## Node selector (selected by NAME):
-        #   Run command for a specific node(s) only i.e. "VM42"
-        #
-        # nodes_selector: []
-        #
-        ## To select all node with a string include in their name use:
-        #
-        # nodes_selector:
-        #   include: k3s1
-
-        ## Playbook to run on the VM (on the local machine)
-        #
-        # playbook_path: "{{ playbook_dir }}/playbook.yml"
-
-        ## Script to run on the VM (on the local machine)
-        #
-        # script_path: "{{ playbook_dir }}/script.yml"
-
-        ## List of VM(s) to create
-        # 
-        vnodes:
-        - NAME: VM42
-          HOSTNAME: VM42
-
-          ## VM resources
-          #
-          CPU: 1
-          MEMORY: 1024
-
-          ## Image:
-          #
-          IMAGE: generic/ubuntu2004
-          TAG: 4.3.6
-
-          ## Provider: tested with Virtualbox only
-          #
-          PROVIDER: virtualbox
-
-          ## Networking
-          #   Network: public | private | forwarded_port
-          NETWORK: private
-          IP: 192.168.21.42
-
-          ## SYNC: configure the sync betweem the host and the VM
-          #
-          DISABLE_SYNC: true
-          LOCAL_SYNC: "."
-          REMOTE_SYNC: "/vagrant"
-          
-          ## Task: To run on the VM during creation
-          #
-          RUN_PLAYBOOK: false
-          RUN_SCRIPT: false
-          SCRIPT_ARGS: ""
+        ## Options to be used when running vagrant (optional)
+        #   vagrantoptions: "up VM21"
+        #   vagrantoptions: "status"
+        
+        ## List of host machines to run the playbook and create the VM(s)
+        machines:
+        
+        ## host matching the host in the inventory file
+        - host: localhost
+        
+          ## working directory on the host machine
+          working_dir: "/home/ansible/.ansible-role-vm"
+        
+          ## List of VM(s) to create
+          vnodes:
+          - name: VM21
+            hostname: VM21
+            image: generic/ubuntu2204
+            tag: 4.3.12
+            provider: 
+              type: virtualbox
+              gui: false
+              cpus: 1
+              memory: 1024
+              name: VM21
+            network: 
+              type: private_network
+              ip: "192.168.42.21"
+            sync:
+            - local: "."
+              remote: "/vagrant"
+              disable: true
 
 License
 -------

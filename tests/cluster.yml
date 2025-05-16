@@ -1,0 +1,94 @@
+---
+machines:
+- host: localhost
+  working_dir: "/home/ansible/.ansible-role-vm-test"
+  provisioning_files:
+  - "{{ playbook_dir }}/playbook-vm.yml"
+  - "{{ playbook_dir }}/script-vm.sh"
+  vnodes:
+  - name: VM21
+    hostname: VM21
+    image: generic/ubuntu2204
+    tag: 4.3.12
+    provider: 
+      type: virtualbox
+      gui: false
+      cpus: 1
+      memory: 1024
+      name: VM21
+    network: 
+      type: private_network
+      ip: "192.168.58.21"
+    sync:
+    - local: "."
+      remote: "/vagrant"
+      disable: true
+    provisionings:
+    - type: "shell"
+      file: "script-vm.sh"
+      name: "myshell"
+      run: "once"
+    - type: "ansible"
+      file: "playbook-vm.yml"
+      name: "myansible"
+      run: "always"
+  - name: VM12
+    hostname: VM12
+    image: generic/ubuntu2204
+    tag: 4.3.12
+    provider: 
+      type: virtualbox
+      gui: false
+      cpus: 1
+      memory: 1024
+      name: VM12
+    network:
+      type: public_network
+      bridge: "{{ ansible_default_ipv4.interface }}"
+      ip: "192.168.1.12"
+      mac: "080027C0A1B2"
+    sync:
+    - local: "."
+      remote: "/vagrant"
+      disable: true
+    provisionings:
+    - type: "shell"
+      file: "script-vm.sh"
+      name: "myshell"
+      run: "once"
+    - type: "ansible"
+      file: "playbook-vm.yml"
+      name: "myansible"
+      run: "never"
+
+- host: "127.0.0.1"
+  working_dir: "/home/ansible/.ansible-role-vm-test2"
+  provisioning_files:
+  - "{{ playbook_dir }}/script-vm.sh"
+  vnodes:
+  - name: VM42
+    hostname: VM42
+    image: generic/ubuntu2204
+    tag: 4.3.12
+    provider: 
+      type: virtualbox
+      gui: false
+      cpus: 1
+      memory: 1024
+      name: VM42
+    network: 
+      type: forwarded_port
+      guest: "80"
+      host: "8080"
+      guest_ip: "127.0.0.1"
+      host_ip: "127.0.0.1"
+      protocal: "tcp"
+    sync:
+    - local: "."
+      remote: "/vagrant"
+      disable: true
+    provisionings:
+    - type: "shell"
+      file: "script-vm.sh"
+      name: "myshell"
+      run: "once"

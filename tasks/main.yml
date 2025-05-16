@@ -1,74 +1,8 @@
 ---
-# tasks file for vm
-- name: Set available clicmd
-  set_fact:
-    clicmd_start:
-      - status
-      - validate
-      - up
-      - resume
-      - reload
-      - provision
-    clicmd_stop:
-      - halt
-      - suspend
-      - destroy
-    playbook_vm:  void.yml
-    script_vm:    void.sh
-
-- name: Set command
-  set_fact:
-    cmd: >-
-      {%- if clicmd == 'destroy' -%}
-        vagrant --no-tty {{ clicmd }} --force
-      {%- elif clicmd == 'provision' -%}
-        vagrant reload --provision-with default,ansible,script --force
-      {%- elif clicmd in clicmd_start or clicmd in clicmd_stop -%}
-        vagrant --no-tty {{ clicmd }}
-      {%- else -%}
-        None
-      {%- endif -%}
-
-- name: Copy files to host machine and update vars
-  include_tasks: copy_files_to_host.yml
-  when:
-  - clicmd in clicmd_start
-
-- name: Install packages
-  become: true
-  package:
-    name: "{{ item }}"
-    state: present
-  with_items:
-  - ansible
-  when: clicmd in clicmd_start
-
-- name: Check if Vagrantfile exists
-  stat:
-    path: "{{ working_dir }}/Vagrantfile"
-  register: Vagrantfile
-
-- name: Run vagrant command '{{ clicmd }}' on host and display output
-  include_tasks: run_cmd_on_host.yml
-  when:
-    - cmd != "None"
-    - Vagrantfile.stat.exists
-    - nodes_selector is undefined or 
-      (nodes_selector | length == 0) or
-      nodes_selector.include is defined
-
-- name: Run vagrant command '{{ clicmd }}' on host and display output
-  include_tasks: run_cmd_on_host_for_selected_nodes.yml
-  with_items: "{{ nodes_selector }}"
+- name: Process each machine
+  include_tasks: process_machine.yml
+  loop: "{{ machines }}"
   loop_control:
-    loop_var: node_selector
-  when:
-    - cmd != "None"
-    - Vagrantfile.stat.exists
-    - node_selector is defined and (nodes_selector | length > 0)
+    loop_var: machine
+  when: machine.host == ansible_host
 
-- name: Cleaning by removing working directory
-  file:
-    path: "{{ working_dir }}"
-    state: absent
-  when: clicmd == "clean"

@@ -1,0 +1,57 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+ENV["VAGRANT_BOX_UPDATE_CHECK_DISABLE"]   = "yes"
+ENV["VAGRANT_CHECKPOINT_DISABLE"]         = "yes"
+ENV["VAGRANT_DISABLE_VBOXSYMLINKCREATE"]  = "yes"
+ENV["VAGRANT_NO_PARALLEL"]                = "yes"
+
+Vagrant.configure("2") do |config|
+{% for node in machine.vnodes %}
+  config.vm.define "{{ node.name }}" do |node|
+{% for sync in node.sync %}
+    node.vm.synced_folder "{{ sync.local }}", "{{ sync.remote }}", disabled: {{ sync.disable | lower | default(false) }}
+{% endfor %}
+
+{% for provisioning in node.provisionings %}
+{% if provisioning.type == "ansible" %}
+    node.vm.provision "{{ provisioning.name }}", type: "ansible", run: "{{ provisioning.run | default('once') }}" do |ansible|
+      ansible.playbook = "{{ provisioning.file }}"
+    end
+{% elif provisioning.type == "shell" %}
+    node.vm.provision "{{ provisioning.name }}", type: "shell", run: "{{ provisioning.run | default('once') }}",
+      path: "{{ provisioning.file }}", args: "{{ provisioning.args | default('') }}"
+{% endif %}
+{% endfor %}
+
+    node.vm.box = "{{ node.image | default('generic/ubuntu2004') }}"
+    node.vm.box_version = "{{ node.tag | default("4.3.8") }}"
+    node.vm.box_check_update = false
+    node.vm.hostname = "{{ node.hostname | default(node.name) }}"
+
+{% if node.network.type == "forwarded_port" %}
+    node.vm.network "forwarded_port", guest: {{ node.network.guest }}, host: "{{ node.network.host }}"
+      {%- if node.network.protocol is defined -%}, protocol: "{{ node.network.protocol }}"{% endif %}
+      {%- if node.network.guest_ip is defined -%}, guest_ip: "{{ node.network.guest_ip }}"{% endif %}
+      {%- if node.network.host_ip is defined -%}, host_ip: "{{ node.network.host_ip }}"{% endif %}
+{% elif node.network.type == "private_network" %}
+    node.vm.network "private_network", ip: "{{ node.network.ip }}"
+{% elif node.network.type == "public_network" %}
+    node.vm.network "public_network"
+      {%- if node.network.ip is defined -%}, ip: "{{ node.network.ip }}"{% endif %}
+      {%- if node.network.bridge is defined -%}, bridge: "{{ node.network.bridge }}"{% endif %}
+      {%- if node.network.mac is defined -%}, mac: "{{ node.network.mac }}"{% endif %}
+{% endif %}
+
+{% if node.provider.type == "virtualbox" %}
+    node.vm.provider "virtualbox" do |vb|
+      vb.gui = {{ node.provider.gui | lower | default(false) }}
+      vb.cpus = {{ node.provider.cpus | default(1) }}
+      vb.memory = {{ node.provider.memory | default(1024) }}
+      vb.name = "{{ node.provider.name | default(node.name) }}"
+    end
+{% endif %}
+  end
+
+{% endfor %}
+end

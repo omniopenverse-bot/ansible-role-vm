@@ -1,0 +1,11 @@
+---
+- hosts: "{{ host }}"
+  vars_files:
+    - "{{ playbook_dir }}/cluster.yml"
+  roles:
+    - "{{ playbook_dir | dirname }}"
+
+  # vars:
+  #   machimes:
+
+# ansible-playbook --extra-var '{"vagrantoptions": "status", "host": "all"}' -i tests/inventory tests/playbook.yml
