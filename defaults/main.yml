@@ -7,7 +7,7 @@
 # List of host machines to run the playbook and create the VM(s)
 machines:
 #
-# host matching the host in the inventory file
+# host matching the host in the inventory file: `ansible_host_name`
 - host: localhost
 #
 # working directory on the host machine

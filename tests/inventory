@@ -1,5 +1,5 @@
-localhost ansible_host=localhost ansible_user=ansible
-localhost2 ansible_host=127.0.0.1 ansible_user=ansible
+localhost ansible_host_name=localhost ansible_host=localhost ansible_user=ansible
+localhost2 ansible_host_name=127.0.0.1 ansible_host=127.0.0.1 ansible_user=ansible
 
 [all]
 localhost

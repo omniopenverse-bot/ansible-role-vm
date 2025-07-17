@@ -4,5 +4,5 @@
   loop: "{{ machines }}"
   loop_control:
     loop_var: machine
-  when: machine.host == ansible_host
+  when: machine.host == ansible_host_name
 
