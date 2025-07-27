@@ -1,8 +1,8 @@
 ---
 - name: Process each machine
-  include_tasks: process_machine.yml
+  ansible.builtin.include_tasks: process_machine.yml
   loop: "{{ machines }}"
   loop_control:
-    loop_var: machine
+      loop_var: machine
   when: machine.host == ansible_host_name
 

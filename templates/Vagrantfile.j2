@@ -9,10 +9,13 @@ ENV["VAGRANT_NO_PARALLEL"]                = "yes"
 Vagrant.configure("2") do |config|
 {% for node in machine.vnodes %}
   config.vm.define "{{ node.name }}" do |node|
+{% if node.sync is defined %}
 {% for sync in node.sync %}
     node.vm.synced_folder "{{ sync.local }}", "{{ sync.remote }}", disabled: {{ sync.disable | lower | default(false) }}
 {% endfor %}
+{% endif %}
 
+{% if node.provisionings is defined %}
 {% for provisioning in node.provisionings %}
 {% if provisioning.type == "ansible" %}
     node.vm.provision "{{ provisioning.name }}", type: "ansible", run: "{{ provisioning.run | default('once') }}" do |ansible|
@@ -23,6 +26,7 @@ Vagrant.configure("2") do |config|
       path: "{{ provisioning.file }}", args: "{{ provisioning.args | default('') }}"
 {% endif %}
 {% endfor %}
+{% endif %}
 
     node.vm.box = "{{ node.image | default('generic/ubuntu2004') }}"
     node.vm.box_version = "{{ node.tag | default("4.3.8") }}"

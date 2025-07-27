@@ -1,14 +1,14 @@
 ---
 - name: Setup working directory
-  include_tasks: setup_working_directory.yml
+  ansible.builtin.include_tasks: setup_working_directory.yml
 
 - name: Check if Vagrantfile exists
-  stat:
-    path: "{{ machine.working_dir }}/Vagrantfile"
+  ansible.builtin.stat:
+      path: "{{ machine.working_dir }}/Vagrantfile"
   register: Vagrantfile
 
 - name: Run 'vagrant {{ vagrantoptions }}' on host and display output
-  include_tasks: run_cmd_on_host.yml
+  ansible.builtin.include_tasks: run_cmd_on_host.yml
   when:
-    - vagrantoptions is defined
-    - Vagrantfile.stat.exists
+      - vagrantoptions is defined
+      - Vagrantfile.stat.exists
